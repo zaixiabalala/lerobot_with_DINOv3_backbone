@@ -16,6 +16,7 @@ conda activate lerobot
 conda install ffmpeg -c conda-forge
 cd lerobot
 pip install .
+pip install transformers
 ```
 ### 3. 训练
 
