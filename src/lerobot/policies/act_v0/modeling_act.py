@@ -345,8 +345,6 @@ class ACT(nn.Module):
                     output_dim=config.dim_model,  # Project directly to dim_model
                     freeze=config.freeze_backbone,
                     model_dir=config.dino_model_dir,
-                    use_lora=config.use_lora,
-                    lora_config=config.lora_config,
                 )
                 backbone_model = self.backbone  # For compatibility with downstream code
             else:

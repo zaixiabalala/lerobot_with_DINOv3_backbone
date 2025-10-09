@@ -115,14 +115,6 @@
         "dino_model_dir": "./dinov3-vits/dinov3-vitb16-pretrain-lvd1689m",
         "pretrained_backbone_weights": "ViT_B_16_Weights.IMAGENET1K_V1",
         "replace_final_stride_with_dilation": false,
-        "use_lora": true,
-        "lora_config": {
-            "r": 16,
-            "lora_alpha": 16,
-            "target_modules": ["query", "key", "value"],
-            "lora_dropout": 0.1,
-            "bias": "none"
-        },
         "pre_norm": false,
         "dim_model": 512,
         "n_heads": 8,

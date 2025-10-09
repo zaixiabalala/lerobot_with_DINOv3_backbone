@@ -5,7 +5,6 @@ import torch.nn as nn
 
 from lerobot.policies.act.dino.config import *
 from transformers import AutoModel, AutoImageProcessor
-from peft import LoraConfig, get_peft_model
 
 class DINOEncoder(nn.Module):
     """
@@ -16,15 +15,7 @@ class DINOEncoder(nn.Module):
     {"feature_map": tensor of shape (B, C, H, W)}
     """
     
-    def __init__(
-        self, 
-        model_name: str, 
-        output_dim: int = 512, 
-        freeze: bool = True,
-        model_dir: str = "dinov3-vits",
-        use_lora: bool = False,          
-        lora_config: dict = None,        
-    ):
+    def __init__(self, model_name: str, output_dim: int = 512, freeze: bool = True, model_dir: str = DINOV3_LOCATION):
         """
         Args:
             model_name: Name of the DINOv3 model (e.g., "dinov3_vits16", "dinov3_vitb16", "dinov3_vitl16")
@@ -37,8 +28,6 @@ class DINOEncoder(nn.Module):
         self.output_dim = output_dim
         self.freeze = freeze
         self.model_dir = model_dir
-        self.use_lora = use_lora
-        self.lora_config = lora_config
         
         assert model_name in MODEL_TO_NUM_LAYERS, f"Model name {model_name} not in {MODEL_TO_NUM_LAYERS}"
 
@@ -61,29 +50,6 @@ class DINOEncoder(nn.Module):
             for param in self.dino.parameters():
                 param.requires_grad = False
             self.dino.eval()
-
-        if use_lora:
-            if self.lora_config is None:
-                lora_config = {
-                    'r': 16,
-                    'lora_alpha': 16,
-                    'target_modules': ["q_proj", "k_proj", "v_proj"],
-                    'lora_dropout': 0.1,
-                    'bias': 'none',
-                }
-            else:
-                lora_config = self.lora_config
-            
-            peft_config = LoraConfig(
-                r=lora_config['r'],
-                lora_alpha=lora_config['lora_alpha'],
-                target_modules=lora_config['target_modules'],
-                lora_dropout=lora_config['lora_dropout'],
-                bias=lora_config['bias'],
-                use_rslora=True,  # use RSLoRA
-            )
-            self.dino = get_peft_model(self.dino, peft_config)
-            print(f"Applied LoRA to DINOv3 with r={lora_config['r']}")
         
         self.n_layers = MODEL_TO_NUM_LAYERS[self.model_name]
         # Projection layer to match output dimension
@@ -106,13 +72,10 @@ class DINOEncoder(nn.Module):
         
         # Forward through DINO with appropriate gradient tracking
         if self.freeze:
-            if self.use_lora:
+            with torch.no_grad():
                 outputs = self.dino(pixel_values=x, output_hidden_states=True)
-            else:
-                with torch.no_grad():
-                    outputs = self.dino(pixel_values=x, output_hidden_states=True)
-            hidden_states = outputs.last_hidden_state
-            patch_features = hidden_states[:, 5:, :]  # (B*T, num_patches, dinov3_dim)
+                hidden_states = outputs.last_hidden_state
+                patch_features = hidden_states[:, 5:, :]  # (B*T, num_patches, dinov3_dim)
         else:
             raise NotImplementedError("DINOv3 encoder does not support training")
         
@@ -133,9 +96,6 @@ class DINOEncoder(nn.Module):
     def train(self, mode: bool = True):
         """Override train mode to keep DINO frozen if requested."""
         super().train(mode)
-        if self.freeze and not self.use_lora:
-           if hasattr(self.dino, 'base_model'):  # PeftModel
-                self.dino.base_model.eval()
-           else:
-                self.dino.eval()
+        if self.freeze:
+            self.dino.eval()
         return self

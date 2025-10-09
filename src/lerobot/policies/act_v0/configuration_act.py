@@ -113,9 +113,6 @@ class ACTConfig(PreTrainedConfig):
     freeze_backbone: bool = True  # Whether to freeze the backbone weights during training
     # Directory for local DINOv3 torch.hub repo (used when vision_backbone startswith "dinov3")
     dino_model_dir: str = "dinov3-vits"
-    use_lora: bool = True
-    lora_config: dict = None
-    
     # Transformer layers.
     pre_norm: bool = False
     dim_model: int = 512

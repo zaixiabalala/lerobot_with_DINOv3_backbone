@@ -13,10 +13,11 @@
 ```bash
 conda create -y -n lerobot python=3.10
 conda activate lerobot
-conda install ffmpeg -c conda-forge
+conda install ffmpeg=7.1.1 -c conda-forge
 cd lerobot
 pip install .
-pip install transformers
+pip install transformers # use dino
+pip install peft # use lora
 ```
 ### 3. 训练
 
