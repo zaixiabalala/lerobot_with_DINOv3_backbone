@@ -21,15 +21,50 @@ pip install peft # use lora
 ```
 ### 3. 训练
 
-可以定制你的训练配置，例如可以通过更改config的方式选择你需要的backbone；config的案例在lerobot/train_config中
+可以定制你的训练配置，例如可以通过更改config的方式选择你需要的backbone；config的案例在lerobot/train_config中；按如下例子更改config
 
+若想要设置backbone为resnet18:
 ```bash
-python -m lerobot.scripts.train --config_path='/home/student/workspace/ruogu/lerobot/train_config/64_100_2cam_dino.json'
+"policy":
+    "vision_backbone": "resnet18",
+    "pretrained_backbone_weights": "ResNet18_Weights.IMAGENET1K_V1",
+```
+
+若想要设置backbone为dinov3:
+```bash
+"policy":
+    "vision_backbone": "dinov3_vitb16",
+    "freeze_backbone": true,
+    "dino_model_dir": "/home/ubuntu/Code/3dgs_code/dinov3-vits/dinov3-vitb16-pretrain-lvd1689m",
+    "use_lora": false,
+```
+
+若想要在backbone为dino时进一步使用lora:
+```bash
+"policy":
+    "vision_backbone": "dinov3_vitb16",
+    "freeze_backbone": true,
+    "dino_model_dir": "/home/ubuntu/Code/3dgs_code/dinov3-vits/dinov3-vitb16-pretrain-lvd1689m",
+    "use_lora": true,
+    "lora_config": {
+        "r": 16,
+        "lora_alpha": 16,
+        "target_modules": ["q_proj",
+            "k_proj",
+            "v_proj"],
+        "lora_dropout": 0.1,
+        "bias": "none"
+    },
+```
+
+可以按照如下命令训练
+```bash
+python -m lerobot.scripts.train --config_path='/home/ubuntu/Code/3dgs_code/lerobot_with_DINOv3_backbone/train_config/64_100_2cam_dino_lora.json'
 ```
 
 本人比较喜欢用于训练的命令（建议ssh使用）
 ```bash
-nohup python -m lerobot.scripts.train --config_path='/home/student/workspace/ruogu/lerobot/train_config/64_100_1cam_dino.json' > /home/student/workspace/ruogu/lerobot_outputs/train/train.out 2>&1 & disown
+nohup python -m lerobot.scripts.train --config_path='/home/ubuntu/Code/3dgs_code/lerobot_with_DINOv3_backbone/train_config/64_100_2cam_dino_lora.json' > /home/ubuntu/Code/3dgs_code/lerobot_outputs/train/train.out 2>&1 & disown
 ```
 
 ### 4. 部署
