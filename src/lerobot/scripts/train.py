@@ -185,8 +185,9 @@ def train(cfg: TrainPipelineConfig):
     with open(plot_path, "w") as f:
         plt.figure()
         plt.plot(plot_data["step"], plot_data["loss"], label="loss")
-        plt.plot(plot_data["step"], plot_data["grad_norm"], label="grad_norm")
-        plt.plot(plot_data["step"], plot_data["lr"], label="lr")
+        plt.xlabel("Step")
+        plt.ylabel("Loss")
+        plt.title("Training Loss")
         plt.legend()
         plt.savefig(plot_path)
 
@@ -274,8 +275,9 @@ def train(cfg: TrainPipelineConfig):
             
             plt.figure()
             plt.plot(plot_data["step"], plot_data["loss"], label="loss")
-            plt.plot(plot_data["step"], plot_data["grad_norm"], label="grad_norm")
-            plt.plot(plot_data["step"], plot_data["lr"], label="lr")
+            plt.xlabel("Step")
+            plt.ylabel("Loss")
+            plt.title("Training Loss")
             plt.legend()
             plt.savefig(plot_path)
             plt.close() 
